@@ -1,6 +1,12 @@
 const events = [];
 
 export function setupEventListeners(root) {
+  for (let i = 0; i < events.length; i++) {
+    if (root.contains(events[i].element)) {
+      events[i].root = root;
+    }
+  }
+
   const eventTypes = [];
   for (let i = 0; i < events.length; i++) {
     if (events[i].root === root) {
@@ -10,9 +16,17 @@ export function setupEventListeners(root) {
     }
   }
 
+  if (root.__eventListeners) {
+    for (const type in root.__eventListeners) {
+      root.removeEventListener(type, root.__eventListeners[type]);
+    }
+  }
+
+  root.__eventListeners = {};
+
   for (let i = 0; i < eventTypes.length; i++) {
     const type = eventTypes[i];
-    root.addEventListener(type, function (event) {
+    const handler = function (event) {
       for (
         let target = event.target;
         target && target !== root;
@@ -28,18 +42,19 @@ export function setupEventListeners(root) {
           }
         }
       }
-    });
+    };
+
+    root.addEventListener(type, handler);
+    root.__eventListeners[type] = handler;
   }
 }
 
 export function addEvent(element, eventType, handler) {
-  const root = element.parentNode;
-
   events.push({
     element: element,
     eventType: eventType,
     handler: handler,
-    root: root,
+    root: null,
   });
 
   return { element, eventType, handler };
@@ -53,6 +68,7 @@ export function removeEvent(element, eventType, handler) {
       events[i].handler === handler
     ) {
       events.splice(i, 1);
+      i--;
     }
   }
 }
