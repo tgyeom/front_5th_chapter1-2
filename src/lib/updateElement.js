@@ -2,8 +2,8 @@ import { addEvent, removeEvent } from "./eventManager";
 import { createElement } from "./createElement";
 
 function updateAttributes(target, originNewProps, originOldProps) {
-  const newProps = originNewProps
-  const oldProps = originOldProps
+  const newProps = originNewProps || {};
+  const oldProps = originOldProps || {};
 
   // 이전 속성 제거
   for (const key in oldProps) {
