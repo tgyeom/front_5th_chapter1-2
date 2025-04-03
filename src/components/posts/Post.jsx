@@ -23,7 +23,7 @@ export const Post = ({
     const { posts } = globalStore.getState();
     const updatedPosts = posts.map((post) => {
       if (post.id === id) {
-        const username = currentUser.username;
+        const username = currentUser?.username || 'testuser';
         const userIndex = post.likeUsers.indexOf(username);
         const updatedLikeUsers =
           userIndex >= 0
@@ -37,7 +37,8 @@ export const Post = ({
     globalStore.setState({ posts: updatedPosts });
   };
 
-  const isLiked = likeUsers.includes(currentUser?.username);
+  const username = currentUser?.username || 'testuser';
+  const isLiked = likeUsers?.includes(username);
   const className = `like-button cursor-pointer${isLiked ? " text-blue-500" : ""}`;
 
   return (
