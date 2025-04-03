@@ -1,10 +1,11 @@
 import { addEvent, removeEvent } from "./eventManager";
-import { createElement } from "./createElement.js";
+import { createElement } from "./createElement";
 
 function updateAttributes(target, originNewProps, originOldProps) {
-  const newProps = originNewProps || {};
-  const oldProps = originOldProps || {};
+  const newProps = originNewProps
+  const oldProps = originOldProps
 
+  // 이전 속성 제거
   for (const key in oldProps) {
     if (key.startsWith("on") && typeof oldProps[key] === "function") {
       const eventType = key.slice(2).toLowerCase();
@@ -12,17 +13,16 @@ function updateAttributes(target, originNewProps, originOldProps) {
         removeEvent(target, eventType, oldProps[key]);
       }
     }
-    if (key !== "children") {
-      if (!(key in newProps)) {
-        if (key === "className") {
-          target.removeAttribute("class");
-        } else {
-          target.removeAttribute(key);
-        }
+    if (key !== "children" && !(key in newProps)) {
+      if (key === "className") {
+        target.removeAttribute("class");
+      } else {
+        target.removeAttribute(key);
       }
     }
   }
 
+  // 새로운 속성 추가/업데이트
   for (const key in newProps) {
     if (key.startsWith("on") && typeof newProps[key] === "function") {
       const eventType = key.slice(2).toLowerCase();
@@ -32,22 +32,19 @@ function updateAttributes(target, originNewProps, originOldProps) {
         }
         addEvent(target, eventType, newProps[key]);
       }
-    }
-
-    if (key !== "children") {
-      if (oldProps[key] !== newProps[key]) {
-        // className 특별 처리
-        if (key === "className") {
-          target.setAttribute("class", newProps[key]);
-        } else {
-          target.setAttribute(key, newProps[key]);
-        }
+    } else if (key !== "children" && oldProps[key] !== newProps[key]) {
+      if (key === "className") {
+        target.setAttribute("class", newProps[key]);
+      } else {
+        target.setAttribute(key, newProps[key]);
       }
     }
   }
 }
 
 export function updateElement(parentElement, newNode, oldNode, index = 0) {
+  if (!parentElement) return;
+
   if (!oldNode) {
     parentElement.appendChild(createElement(newNode));
     return;
@@ -58,15 +55,17 @@ export function updateElement(parentElement, newNode, oldNode, index = 0) {
     return;
   }
 
+  const currentElement = parentElement.childNodes[index];
+
   if (typeof newNode === "string" || typeof newNode === "number") {
     if (oldNode !== newNode) {
       if (typeof oldNode === "object") {
         parentElement.replaceChild(
           document.createTextNode(String(newNode)),
-          parentElement.childNodes[index],
+          currentElement
         );
       } else {
-        parentElement.childNodes[index].textContent = String(newNode);
+        currentElement.textContent = String(newNode);
       }
     }
     return;
@@ -75,16 +74,12 @@ export function updateElement(parentElement, newNode, oldNode, index = 0) {
   if (oldNode.type !== newNode.type) {
     parentElement.replaceChild(
       createElement(newNode),
-      parentElement.childNodes[index],
+      currentElement
     );
     return;
   }
 
-  updateAttributes(
-    parentElement.childNodes[index],
-    newNode.props,
-    oldNode.props,
-  );
+  updateAttributes(currentElement, newNode.props, oldNode.props);
 
   const newChildren = newNode.children || [];
   const oldChildren = oldNode.children || [];
@@ -92,10 +87,10 @@ export function updateElement(parentElement, newNode, oldNode, index = 0) {
 
   for (let i = 0; i < maxLength; i++) {
     updateElement(
-      parentElement.childNodes[index],
+      currentElement,
       newChildren[i],
       oldChildren[i],
-      i,
+      i
     );
   }
 }
