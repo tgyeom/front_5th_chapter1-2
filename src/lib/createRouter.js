@@ -1,8 +1,5 @@
 import { createObserver } from "./createObserver";
-
-const BASE_URL =
-  process.env.NODE_ENV === "production" ? "/front_5th_chapter1-2" : "";
-
+import { BASE_URL } from "../utils/constants";
 export const createRouter = (routes) => {
   const { subscribe, notify } = createObserver();
 

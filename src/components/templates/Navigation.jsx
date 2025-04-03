@@ -2,6 +2,7 @@
 import { createVNode } from "../../lib";
 import { router } from "../../router";
 import { globalStore } from "../../stores";
+import { BASE_URL } from "../../utils/constants";
 
 const getNavItemClass = (path) => {
   const currentPath = window.location.hash
